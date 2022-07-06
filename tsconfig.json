@@ -1,12 +1,20 @@
 {
   "compilerOptions": {
+    "target": "es6",
     "module": "commonjs",
-    "esModuleInterop": true,
-    "target": "ES6",
-    "noImplicitAny": true,
-    "moduleResolution": "node",
     "sourceMap": true,
-    "outDir": "build",
-    "baseUrl": "."
-  }
+    "strict": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "allowJs": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "removeComments": true,
+    "preserveConstEnums": true,
+    "outDir": "build"
+  },
+  "include": ["src/**/*.ts", "src/main.ts"]
 }

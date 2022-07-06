@@ -8,13 +8,17 @@
     "build": "dotenv -e .env.production tsc",
     "serve:prod": "node build/main.js",
     "serve": "concurrently -k -p \"[{name}]\" -n \"TypeScript Watch,Nodemon\" \"npm run watch-ts\" \"nodemon ./build/main.js\"",
-    "watch-ts": "tsc -w"
+    "watch-ts": "tsc -w",
+    "lint": "eslint \"./src/**\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/cors": "^2.8.12",
     "@types/express": "^4.17.13",
+    "@types/jsonwebtoken": "^8.5.8",
     "@types/node": "^18.0.3",
     "@typescript-eslint/eslint-plugin": "^5.30.5",
     "@typescript-eslint/parser": "^5.30.5",
@@ -28,8 +32,12 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.18.1",
+    "jsonwebtoken": "^8.5.1",
     "mysql2": "^2.3.3",
-    "sequelize": "^6.21.2"
+    "sequelize": "^6.21.2",
+    "winston": "^3.8.1",
+    "winston-daily-rotate-file": "^4.7.1"
   }
 }
