@@ -11,7 +11,7 @@ initExpress(app);
 Database.authenticate()
   .then(() => {
     syncTable();
-    Database.sync({ force: true })
+    Database.sync({ alter: true })
       .then(() => {
         app.listen(process.env.PORT, () => {
           console.log("server is on: ", process.env.PORT);

@@ -39,7 +39,7 @@ usersRouter.post("/register", async (req, res, next) => {
   try {
     await user.validate();
     const saved = await user.save();
-    const { token, ...json } = saved.toJSON();
+    const { token, ...json } = saved.toAuthJSON();
     res.cookie("token", token, {
       httpOnly: true,
       secure: config.isProd,
@@ -70,7 +70,7 @@ usersRouter.post("/login", async (req, res, next) => {
     if (!user) return res.status(400).json({ errors: [{ user: "not found" }] });
     const valid = user.validatePassword(password);
     if (valid) {
-      const { token, ...json } = user.toJSON();
+      const { token, ...json } = user.toAuthJSON();
       res.cookie("token", token, {
         httpOnly: true,
         secure: config.isProd,

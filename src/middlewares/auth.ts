@@ -20,8 +20,8 @@ const getNormalUserTokenFromRequest = async (req: Request) => {
           if (error) {
             resolve(error);
           } else if (decoded && typeof decoded !== 'string') {
-            const { id, username, email } = decoded;
-            req.user = { id, username, email };
+            const { id, username, email, bizReg, role } = decoded;
+            req.user = { id, username, email, bizReg, role };
             resolve(true);
           } else {
             resolve(false);
@@ -35,7 +35,7 @@ const getNormalUserTokenFromRequest = async (req: Request) => {
 
 export default {
   bizUser: async (req: Request, res: Response, next: NextFunction) => {
-    if (req.body.user && req.body.user.bizRegNumber) next();
+    if (req.body.user && req.body.user.bizReg) next();
     else {
       return res.status(401).json({
         errors: [
@@ -59,15 +59,16 @@ export default {
         .status(401)
         .json({ errors: [{ auth: 'token must be provided' }] });
     }
-    if (req.user?.bizRegNumber) {
+    if (req.user?.bizReg) {
       BizUser.findOne({
         where: {
           id: req.user.id,
-          bizRegNumber: req.user.bizRegNumber,
+          bizReg: req.user.bizReg,
         },
       })
         .then((bizUser) => {
           req.body.user = bizUser;
+          next()
         })
         .catch(next);
     } else {

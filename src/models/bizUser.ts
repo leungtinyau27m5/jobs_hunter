@@ -11,7 +11,7 @@ class BizUser extends Model {
   declare email: string;
   declare salt: string;
   declare hash: string;
-  declare bizRegNumber: number;
+  declare bizReg: number;
 
   setPassword(password: string) {
     this.salt = randomBytes(16).toString('hex');
@@ -31,7 +31,7 @@ class BizUser extends Model {
     return jwt.sign(
       {
         id: this.id,
-        bizRegNumber: this.bizRegNumber,
+        bizReg: this.bizReg,
         username: this.username,
         role: this.role,
         email: this.email,
@@ -44,10 +44,10 @@ class BizUser extends Model {
     );
   }
 
-  toJSON() {
+  toAuthJSON() {
     return {
       id: this.id,
-      bizRegNumber: this.bizRegNumber,
+      bizReg: this.bizReg,
       username: this.username,
       role: this.role,
       email: this.email,

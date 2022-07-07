@@ -6,7 +6,7 @@ declare namespace Express {
       username: string;
       email: string;
       role?: string;
-      bizRegNumber?: number;
+      bizReg?: number;
     };
   }
 }

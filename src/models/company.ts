@@ -2,7 +2,7 @@ import { DataTypes, Model } from 'sequelize';
 import Database from '../common/database';
 
 class Company extends Model {
-  declare bizRegNumber: number;
+  declare bizReg: string;
   declare name: string;
   declare description: string;
   declare district: string;
@@ -18,8 +18,8 @@ class Company extends Model {
 
 Company.init(
   {
-    bizRegNumber: {
-      type: DataTypes.INTEGER,
+    bizReg: {
+      type: DataTypes.STRING(50),
       allowNull: false,
       primaryKey: true,
       unique: true,

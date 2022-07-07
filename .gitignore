@@ -1,3 +1,4 @@
 build
 node_modules
 **_log
+src/mailer/index.ts

@@ -1,5 +1,8 @@
 import { Router } from 'express';
+import logger from '../../../common/logger';
 import config from '../../../config';
+import transporter from '../../../mailer';
+import { passwordChangedTemplate } from '../../../mailer/templates/users';
 import auth from '../../../middlewares/auth';
 import User from '../../../models/user';
 
@@ -22,11 +25,23 @@ singleUserRouter.put('/', auth.required, async (req, res, next) => {
     await user.validate();
     const saved = await user.save();
     const { token, ...json } = saved.toJSON();
-    res.cookie('token', token, {
+    res.cookie('token', '', {
       httpOnly: true,
       secure: config.isProd,
-      maxAge: 1000 * 60 * 60 * 24 * 30, // 30days
+      maxAge: 1000,
     });
+    if (password) {
+      transporter
+        .sendMail({
+          to: saved.email,
+          subject: 'Password Changed',
+          html: passwordChangedTemplate,
+        })
+        .then((mail) => {
+          logger.info(mail);
+        })
+        .catch((err) => logger.debug(err));
+    }
     return res.json(json);
   } catch (err) {
     next(err);

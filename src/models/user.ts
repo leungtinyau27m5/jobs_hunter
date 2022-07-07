@@ -10,6 +10,8 @@ class User extends Model {
   declare email: string;
   declare salt: string;
   declare hash: string;
+  declare cvStatus: 'public' | 'companyOnly' | 'hide';
+  declare cv?: string;
 
   generateJWT(): string {
     return jwt.sign(
@@ -40,7 +42,7 @@ class User extends Model {
     return this.hash === hash;
   }
 
-  toJSON() {
+  toAuthJSON() {
     return {
       id: this.id,
       username: this.username,
@@ -71,6 +73,14 @@ User.init(
           msg: 'invalid email',
         },
       },
+    },
+    cv: {
+      type: DataTypes.STRING(2083),
+      allowNull: true,
+    },
+    cvStatus: {
+      type: DataTypes.ENUM('public', 'companyOnly', 'hide'),
+      defaultValue: 'hide',
     },
     salt: {
       type: DataTypes.STRING(32),

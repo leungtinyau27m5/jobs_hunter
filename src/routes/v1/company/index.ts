@@ -3,10 +3,10 @@ import Company from '../../../models/company';
 
 const companyRouter = Router();
 
-companyRouter.param('bizRegNumber', (req, res, next, bizRegNumber) => {
+companyRouter.param('bizReg', (req, res, next, bizReg) => {
   Company.findOne({
     where: {
-      bizRegNumber: bizRegNumber,
+      bizReg: bizReg,
     },
   })
     .then((company) => {
@@ -16,7 +16,7 @@ companyRouter.param('bizRegNumber', (req, res, next, bizRegNumber) => {
     .catch(next);
 });
 
-companyRouter.get('/:bizRegNumber', (req, res) => {
+companyRouter.get('/:bizReg', (req, res) => {
   const company = req.body.company as Company;
   res.json(company.toPublic());
 });

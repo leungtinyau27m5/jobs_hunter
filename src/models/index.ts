@@ -4,7 +4,7 @@ import Job from './job';
 
 const syncTable = () => {
   Job.belongsTo(Company, {
-    foreignKey: 'bizRegNumber',
+    foreignKey: 'bizReg',
   });
   Job.belongsTo(BizUser, {
     foreignKey: 'lastUpdatedBy',
@@ -13,13 +13,13 @@ const syncTable = () => {
     foreignKey: 'lastUpdatedBy'
   })
   Company.hasMany(Job, {
-    foreignKey: 'bizRegNumber',
+    foreignKey: 'bizReg',
   });
   Company.hasMany(BizUser, {
-    foreignKey: 'bizRegNumber',
+    foreignKey: 'bizReg',
   });
   BizUser.belongsTo(Company, {
-    foreignKey: 'bizRegNumber',
+    foreignKey: 'bizReg',
   });
 };
 
