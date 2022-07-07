@@ -47,7 +47,6 @@ usersRouter.post("/register", async (req, res, next) => {
     });
     return res.json(json);
   } catch (err) {
-    console.log("creat error??", err);
     return next(err);
   }
 });

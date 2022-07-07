@@ -1,10 +1,29 @@
-import { DataTypes, Model } from "sequelize";
-import Database from "../common/database";
+import { DataTypes, Model } from 'sequelize';
+import Database from '../common/database';
 
-class Company extends Model {}
+class Company extends Model {
+  declare bizRegNumber: number;
+  declare name: string;
+  declare description: string;
+  declare district: string;
+
+  toPublic() {
+    return {
+      name: this.name,
+      description: this.description,
+      district: this.district,
+    };
+  }
+}
 
 Company.init(
   {
+    bizRegNumber: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      primaryKey: true,
+      unique: true,
+    },
     name: {
       type: DataTypes.STRING(50),
       allowNull: false,
@@ -22,7 +41,7 @@ Company.init(
   },
   {
     sequelize: Database,
-    tableName: "companies",
+    tableName: 'companies',
     freezeTableName: true,
     timestamps: true,
   }
