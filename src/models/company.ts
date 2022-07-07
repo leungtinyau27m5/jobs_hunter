@@ -22,12 +22,12 @@ Company.init(
       type: DataTypes.STRING(50),
       allowNull: false,
       primaryKey: true,
-      unique: true,
+      unique: 'bizReg',
     },
     name: {
       type: DataTypes.STRING(50),
       allowNull: false,
-      unique: true,
+      unique: 'name',
     },
     description: {
       type: DataTypes.TEXT,
@@ -36,7 +36,6 @@ Company.init(
     district: {
       type: DataTypes.STRING(25),
       allowNull: false,
-      unique: false,
     },
   },
   {
