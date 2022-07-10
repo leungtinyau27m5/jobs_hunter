@@ -1,25 +1,32 @@
-import BizUser from './bizUser';
-import Company from './company';
-import Job from './job';
+import BizUser from "./bizUser";
+import Company from "./company";
+import Job from "./job";
+import JobCategory from "./jobCat";
 
 const syncTable = () => {
   Job.belongsTo(Company, {
-    foreignKey: 'bizReg',
+    foreignKey: "bizReg",
   });
   Job.belongsTo(BizUser, {
-    foreignKey: 'lastUpdatedBy',
+    foreignKey: "lastUpdatedBy",
+  });
+  Job.belongsTo(JobCategory, {
+    foreignKey: "categoryId",
+  });
+  JobCategory.hasMany(Job, {
+    foreignKey: "catgoryId",
   });
   BizUser.hasMany(Job, {
-    foreignKey: 'lastUpdatedBy'
-  })
+    foreignKey: "lastUpdatedBy",
+  });
   Company.hasMany(Job, {
-    foreignKey: 'bizReg',
+    foreignKey: "bizReg",
   });
   Company.hasMany(BizUser, {
-    foreignKey: 'bizReg',
+    foreignKey: "bizReg",
   });
   BizUser.belongsTo(Company, {
-    foreignKey: 'bizReg',
+    foreignKey: "bizReg",
   });
 };
 
