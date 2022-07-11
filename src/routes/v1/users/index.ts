@@ -1,46 +1,33 @@
-import { Router } from "express";
-import config from "../../../config";
-import User from "../../../models/user";
+import { Router } from 'express';
+import config from '../../../config';
+import User from '../../../models/user';
 
 const usersRouter = Router();
 
-/**
- * @api {post} /api/v1/users/register
- * @apiName Create User
- * @apiGroup Users
- * 
- * @apiParam {String} email unique
- * @apiParam {String} password
- * @apiParam {String} username
- * 
- * @apiSuccess {Number} id unique id of the user
- * @apiSuccess {String} email unique email of the user
- * @apiSuccess {String} username
- */
-usersRouter.post("/register", async (req, res, next) => {
-  const { email = "", password = "", username = "" } = req.body;
+usersRouter.post('/register', async (req, res, next) => {
+  const { email = '', password = '', username = '' } = req.body;
   const errors = [];
-  if (typeof username !== "string" || username === "") {
+  if (typeof username !== 'string' || username === '') {
     errors.push({
-      username: "invalid value",
+      username: 'invalid value',
     });
   }
-  if (typeof email !== "string" || email === "") {
+  if (typeof email !== 'string' || email === '') {
     errors.push({
-      email: "invalid value",
+      email: 'invalid value',
     });
   }
-  if (typeof password !== "string" || password === "") {
+  if (typeof password !== 'string' || password === '') {
     errors.push({
-      password: "invalid value",
+      password: 'invalid value',
     });
   } else if (password.length < 8) {
     errors.push({
-      password: "min length is 8",
+      password: 'min length is 8',
     });
   } else if (password.length > 16) {
     errors.push({
-      password: "max length is 16",
+      password: 'max length is 16',
     });
   }
   if (errors.length) return res.status(422).json(errors);
@@ -53,7 +40,7 @@ usersRouter.post("/register", async (req, res, next) => {
     await user.validate();
     const saved = await user.save();
     const { token, ...json } = saved.toAuthJSON();
-    res.cookie("token", token, {
+    res.cookie('token', token, {
       httpOnly: true,
       secure: config.isProd,
       maxAge: 1000 * 60 * 60 * 24 * 30, // 30days
@@ -64,27 +51,27 @@ usersRouter.post("/register", async (req, res, next) => {
   }
 });
 
-usersRouter.post("/login", async (req, res, next) => {
-  const { email = "", password = "" } = req.body;
+usersRouter.post('/login', async (req, res, next) => {
+  const { email = '', password = '' } = req.body;
   const errors = [];
-  if (email === "") {
+  if (email === '') {
     errors.push({
-      email: "invalid value",
+      email: 'invalid value',
     });
   }
-  if (password === "") {
+  if (password === '') {
     errors.push({
-      password: "invalid value",
+      password: 'invalid value',
     });
   }
   if (errors.length) return res.status(422).json(errors);
   try {
     const user = await User.findOne({ where: { email } });
-    if (!user) return res.status(400).json({ errors: [{ user: "not found" }] });
+    if (!user) return res.status(400).json({ errors: [{ user: 'not found' }] });
     const valid = user.validatePassword(password);
     if (valid) {
       const { token, ...json } = user.toAuthJSON();
-      res.cookie("token", token, {
+      res.cookie('token', token, {
         httpOnly: true,
         secure: config.isProd,
         maxAge: 1000 * 60 * 60 * 24 * 30, // 30days
@@ -94,7 +81,7 @@ usersRouter.post("/login", async (req, res, next) => {
     return res.status(400).json({
       errors: [
         {
-          user: "not found",
+          user: 'not found',
         },
       ],
     });

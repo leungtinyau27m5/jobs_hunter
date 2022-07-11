@@ -10,6 +10,7 @@
     "serve": "concurrently -k -p \"[{name}]\" -n \"TypeScript Watch,Nodemon\" \"npm run watch-ts\" \"nodemon ./build/main.js\"",
     "watch-ts": "tsc -w",
     "lint": "eslint \"./src/**\"",
+    "build:api": "apidoc -i src -o doc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

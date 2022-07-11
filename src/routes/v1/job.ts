@@ -1,8 +1,5 @@
 import { Router } from 'express';
 import { WhereOptions } from 'sequelize';
-import logger from '../../common/logger';
-import transporter from '../../mailer';
-import jobApplied from '../../mailer/templates/jobApplied';
 import auth from '../../middlewares/auth';
 import BizUser from '../../models/bizUser';
 import Company from '../../models/company';
@@ -14,11 +11,17 @@ import User from '../../models/user';
 const jobRouter = Router();
 
 jobRouter.get('/', auth.optional, async (req, res, next) => {
-  const { offset = 0, limit = 20, categoryId = null, bizReg } = req.query;
+  const {
+    offset = 0,
+    limit = 20,
+    categoryId = null,
+    bizReg = null,
+  } = req.query;
   const where: WhereOptions = {
     status: 'active',
   };
   if (categoryId !== null) where.categoryId = categoryId;
+  if (bizReg !== null) where.bizReg = bizReg;
   try {
     const jobs = await Job.findAndCountAll({
       where,
@@ -27,12 +30,12 @@ jobRouter.get('/', auth.optional, async (req, res, next) => {
         {
           model: Company,
           attributes: ['name', 'description', 'bizReg', 'district'],
-          as: 'company'
+          as: 'company',
         },
         {
           model: JobCategory,
           attributes: ['name', 'description'],
-          as: 'category'
+          as: 'category',
         },
       ],
       limit: +limit > 20 ? +limit : +limit,
@@ -66,21 +69,6 @@ jobRouter.get('/apply/:jobId', auth.required, async (req, res, next) => {
       application.save().then((saved) => {
         return res.json(saved);
       });
-      // application
-      //   .save()
-      //   .then((saved) => {
-      //     res.json(saved);
-      //     Promise.all([
-      //       transporter.sendMail({
-      //         to: user.email,
-      //         subject: `${job.title} applied`,
-      //         html: jobApplied,
-      //       }),
-      //     ])
-      //       .then(([appliedEmail]) => logger.info(appliedEmail))
-      //       .catch(logger.debug);
-      //   })
-      //   .catch(next);
     } catch (err) {
       return next(err);
     }

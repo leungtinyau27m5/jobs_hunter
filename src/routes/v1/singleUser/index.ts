@@ -1,18 +1,24 @@
-import { Router } from "express";
-import logger from "../../../common/logger";
-import config from "../../../config";
-import transporter from "../../../mailer";
-import { passwordChangedTemplate } from "../../../mailer/templates/users";
-import auth from "../../../middlewares/auth";
-import User from "../../../models/user";
+import { Router } from 'express';
+import logger from '../../../common/logger';
+import config from '../../../config';
+import transporter from '../../../mailer';
+import { passwordChangedTemplate } from '../../../mailer/templates/users';
+import auth from '../../../middlewares/auth';
+import User from '../../../models/user';
 
 const singleUserRouter = Router();
 
-singleUserRouter.get("/", auth.required, (req, res) => {
+/**
+ * @apiVersion 1.0.0
+ * @api {get} /api/v1/user
+ * @apiGroup singleUser
+ * @apiName GetUserByToken
+ */
+singleUserRouter.get('/', auth.required, (req, res) => {
   res.json({ ...req.body.user });
 });
 
-singleUserRouter.put("/", auth.required, async (req, res, next) => {
+singleUserRouter.put('/', auth.required, async (req, res, next) => {
   const user = req.body.user as User;
   const { username, password } = req.body;
   if (username) {
@@ -25,7 +31,7 @@ singleUserRouter.put("/", auth.required, async (req, res, next) => {
     await user.validate();
     const saved = await user.save();
     const { token, ...json } = saved.toJSON();
-    res.cookie("token", "", {
+    res.cookie('token', '', {
       httpOnly: true,
       secure: config.isProd,
       maxAge: 1000,
@@ -34,7 +40,7 @@ singleUserRouter.put("/", auth.required, async (req, res, next) => {
       transporter
         .sendMail({
           to: saved.email,
-          subject: "Password Changed",
+          subject: 'Password Changed',
           html: passwordChangedTemplate,
         })
         .then((mail) => {

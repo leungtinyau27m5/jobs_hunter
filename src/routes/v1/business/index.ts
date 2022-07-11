@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { Sequelize, WhereOptions } from 'sequelize';
+import { WhereOptions } from 'sequelize';
 import logger from '../../../common/logger';
 import config from '../../../config';
 import auth from '../../../middlewares/auth';
@@ -51,55 +51,94 @@ biz.post('/create', async (req, res, next) => {
   }
 });
 
-biz.get('/:bizReg/job', auth.required, auth.bizUser, async (req, res, next) => {
-  const user = req.body.user as BizUser;
-  const bizReg = req.params.bizReg;
-  if (bizReg !== user.bizReg)
-    return res.status(401).json({ errors: [{ biz: 'not allowed to access' }] });
-  const { offset = 0, limit = 20, categoryId = null } = req.query;
-  const where: WhereOptions = {
-    status: 'active',
-  };
-  if (categoryId !== null) where.categoryId = categoryId;
-  try {
-    const jobs = await Job.findAll({
-      where,
+biz.get(
+  '/:bizReg/job',
+  auth.required,
+  auth.bizUser,
+  auth.sameBiz,
+  async (req, res, next) => {
+    const { offset = 0, limit = 20, categoryId = null } = req.query;
+    const where: WhereOptions = {
+      status: 'active',
+    };
+    if (categoryId !== null) where.categoryId = categoryId;
+    try {
+      const jobs = await Job.findAll({
+        where,
+        include: [
+          {
+            model: JobCategory,
+            attributes: ['name', 'description'],
+            as: 'category',
+          },
+          {
+            model: JobApplication,
+            limit: 50,
+            attributes: ['userId'],
+            as: 'applications',
+          },
+        ],
+        limit: +limit > 20 ? +limit : +limit,
+        offset: +offset,
+      });
+      Promise.all(
+        jobs.map((job) =>
+          JobApplication.count({
+            where: {
+              jobId: job.id,
+            },
+          })
+        )
+      )
+        .then((counts) => {
+          counts.forEach((count, idx) => {
+            jobs[idx].setDataValue('totalApplications', count);
+          });
+          return res.json(jobs);
+        })
+        .catch(next);
+    } catch (err) {
+      return next(err);
+    }
+  }
+);
+
+biz.get(
+  '/:bizReg/job/:jobId',
+  auth.required,
+  auth.bizUser,
+  auth.sameBiz,
+  async (req, res, next) => {
+    const user = req.body.user as BizUser;
+    Job.findOne({
+      attributes: ['title', 'status', 'createdAt'],
+      where: {
+        bizReg: user.bizReg,
+        id: req.params.jobId,
+      },
       include: [
         {
-          model: JobCategory,
-          attributes: ['name', 'description'],
-          as: 'category'
-        },
-        {
           model: JobApplication,
-          limit: 50,
-          attributes: ['userId'],
-          as: 'applications'
+          as: 'applications',
+          attributes: ['createdAt', 'status'],
+          include: [
+            {
+              model: User,
+              attributes: ['id', 'username', 'email', 'cv', 'icon'],
+              as: 'user',
+            },
+          ],
         },
       ],
-      limit: +limit > 20 ? +limit : +limit,
-      offset: +offset,
-    });
-    Promise.all(
-      jobs.map((job) =>
-        JobApplication.count({
-          where: {
-            jobId: job.id,
-          },
-        })
-      )
-    )
-      .then((counts) => {
-        counts.forEach((count, idx) => {
-          jobs[idx].setDataValue('totalApplications', count);
-        });
-        return res.json(jobs);
+    })
+      .then((job) => {
+        if (!job)
+          return res.status(404).json({ errors: [{ job: 'not found' }] });
+        return res.json(job.applications);
       })
       .catch(next);
-  } catch (err) {
-    return next(err);
   }
-});
+);
 
 biz.get(
   '/:bizReg/application',
@@ -121,12 +160,12 @@ biz.get(
         {
           model: User,
           attributes: ['icon', 'username', 'email', 'cv'],
-          as: 'user'
+          as: 'user',
         },
         {
           model: Job,
           attributes: ['id', 'title', 'status'],
-          as: 'job'
+          as: 'job',
         },
       ],
       where: {
@@ -156,31 +195,30 @@ biz.get(
           },
         ],
       });
-    JobApplication.findOne({
-      where: {
-        userId,
-        jobId,
-      },
-      attributes: ['createdAt'],
-      include: [
-        {
-          model: User,
-          attributes: ['id', 'username', 'email', 'cv', 'icon'],
-          as: 'user'
+    try {
+      const application = await JobApplication.findOne({
+        where: {
+          userId,
+          jobId,
         },
-        {
-          model: Job,
-          attributes: ['title', 'status'],
-          as: 'job'
-        },
-      ],
-    })
-      .then((application) => {
-        if (!application)
-          return res
-            .status(404)
-            .json({ errors: [{ application: 'not found' }] });
-        res.json(application);
+        attributes: ['createdAt', 'status'],
+        include: [
+          {
+            model: User,
+            attributes: ['id', 'username', 'email', 'cv', 'icon'],
+            as: 'user',
+          },
+          {
+            model: Job,
+            attributes: ['title', 'status'],
+            as: 'job',
+          },
+        ],
+      });
+      if (!application)
+        return res.status(404).json({ errors: [{ application: 'not found' }] });
+      res.json(application);
+      setTimeout(() => {
         if (application.status === 'sent') {
           application.status = 'reviewed';
           try {
@@ -189,8 +227,10 @@ biz.get(
             logger.debug(err);
           }
         }
-      })
-      .catch(next);
+      }, 1000);
+    } catch (err) {
+      next(err);
+    }
   }
 );
 

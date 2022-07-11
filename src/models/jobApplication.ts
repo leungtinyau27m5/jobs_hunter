@@ -10,6 +10,9 @@ import logger from '../common/logger';
 import transporter from '../mailer';
 import applicationReview from '../mailer/templates/applicationReview';
 import jobApplied from '../mailer/templates/jobApplied';
+import notifyBizJobApplied from '../mailer/templates/notifyBizJobApplied';
+import BizUser from './bizUser';
+import BizUserSubscription from './bizUserSubscription';
 import Company from './company';
 import Job from './job';
 import User from './user';
@@ -19,7 +22,7 @@ class JobApplication extends Model {
   declare userId: number;
   declare jobId: number;
   declare bizReg: string;
-  declare status: 'sent' | 'reviewed';
+  declare status: 'sent' | 'reviewed' | 'checked';
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
@@ -47,7 +50,7 @@ JobApplication.init(
       allowNull: false,
     },
     status: {
-      type: DataTypes.ENUM('sent', 'reviewed'),
+      type: DataTypes.ENUM('sent', 'reviewed', 'checked'),
       allowNull: false,
       defaultValue: 'sent',
     },
@@ -109,6 +112,30 @@ JobApplication.afterUpdate(async (application) => {
         html: applicationReview,
       });
     }
+    const bizUsers = await BizUser.findAll({
+      where: {
+        bizReg: job.bizReg,
+      },
+      include: {
+        model: UserSubscription,
+        attributes: ['applied'],
+        as: 'subscription',
+      },
+    });
+    const emails = bizUsers.reduce((emails, user) => {
+      if (!user.subscription) return emails;
+      if (user.subscription.applied) emails.push(user.email);
+      return emails;
+    }, [] as string[]);
+    Promise.all(
+      emails.map((email) =>
+        transporter.sendMail({
+          to: email,
+          subject: `${job.title} is applied by ${userSub.user?.username}`,
+          html: notifyBizJobApplied,
+        })
+      )
+    ).catch(logger.debug);
   } catch (err) {
     logger.debug(err);
   }
