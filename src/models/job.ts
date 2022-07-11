@@ -3,6 +3,7 @@ import Database from '../common/database';
 
 class Job extends Model {
   declare id: number;
+  declare bizReg: string;
   declare title: string;
   declare description: string;
   declare status: 'active' | 'closed' | 'expired';

@@ -1,7 +1,7 @@
 import { Router } from "express";
 import biz from "./business";
 import bizUser from "./business/bizUser";
-import jobRouter from "./business/job";
+import jobRouter from "./job";
 import singleUserRouter from "./singleUser";
 import usersRouter from "./users";
 

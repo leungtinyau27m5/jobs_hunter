@@ -37,6 +37,10 @@ Company.init(
       type: DataTypes.STRING(25),
       allowNull: false,
     },
+    url: {
+      type: DataTypes.STRING(512),
+      allowNull: true,
+    }
   },
   {
     sequelize: Database,

@@ -1,9 +1,9 @@
-import { NextFunction, Request, Response } from "express";
-import jwt from "jsonwebtoken";
-import type { VerifyErrors } from "jsonwebtoken";
-import config from "../config";
-import User from "../models/user";
-import BizUser from "../models/bizUser";
+import { NextFunction, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
+import type { VerifyErrors } from 'jsonwebtoken';
+import config from '../config';
+import User from '../models/user';
+import BizUser from '../models/bizUser';
 
 const getNormalUserTokenFromRequest = async (req: Request) => {
   return new Promise<VerifyErrors | null | boolean>((resolve) => {
@@ -14,12 +14,12 @@ const getNormalUserTokenFromRequest = async (req: Request) => {
         token,
         config.secret,
         {
-          algorithms: ["HS256"],
+          algorithms: ['HS256'],
         },
         (error, decoded) => {
           if (error) {
             resolve(error);
-          } else if (decoded && typeof decoded !== "string") {
+          } else if (decoded && typeof decoded !== 'string') {
             const { id, username, email, bizReg, role } = decoded;
             req.user = { id, username, email, bizReg, role };
             resolve(true);
@@ -34,13 +34,24 @@ const getNormalUserTokenFromRequest = async (req: Request) => {
 };
 
 export default {
+  sameBiz: async (req: Request, res: Response, next: NextFunction) => {
+    if (req.params.bizReg && req.params.bizReg === req.body.user.bizReg) next();
+    else
+      return res.status(401).json({
+        errors: [
+          {
+            auth: `unauthorized access to ${req.params.bizReg} (biz)`,
+          },
+        ],
+      });
+  },
   bizUser: async (req: Request, res: Response, next: NextFunction) => {
     if (req.body.user && req.body.user.bizReg) next();
     else {
       return res.status(401).json({
         errors: [
           {
-            auth: "unauthroized access (biz)",
+            auth: 'unauthroized access (biz)',
           },
         ],
       });
@@ -53,11 +64,11 @@ export default {
     } else if (result === false) {
       return res
         .status(401)
-        .json({ errors: [{ auth: "unauthorized access" }] });
+        .json({ errors: [{ auth: 'unauthorized access' }] });
     } else if (result === null) {
       return res
         .status(401)
-        .json({ errors: [{ auth: "token must be provided" }] });
+        .json({ errors: [{ auth: 'token must be provided' }] });
     }
     if (req.user?.bizReg) {
       BizUser.findOne({

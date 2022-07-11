@@ -3,6 +3,8 @@ import { DataTypes, Model } from 'sequelize';
 import Database from '../common/database';
 import jwt from 'jsonwebtoken';
 import config from '../config';
+import logger from '../common/logger';
+import BizUserSubscription from './bizUserSubscription';
 
 class BizUser extends Model {
   declare id: string;
@@ -11,7 +13,7 @@ class BizUser extends Model {
   declare email: string;
   declare salt: string;
   declare hash: string;
-  declare bizReg: number;
+  declare bizReg: string;
 
   setPassword(password: string) {
     this.salt = randomBytes(16).toString('hex');
@@ -92,5 +94,16 @@ BizUser.init(
     timestamps: true,
   }
 );
+
+BizUser.afterCreate(async (bizUser) => {
+  try {
+    const bizUserId = bizUser.id;
+    BizUserSubscription.create({
+      bizUserId,
+    });
+  } catch (err) {
+    logger.debug(err);
+  }
+});
 
 export default BizUser;

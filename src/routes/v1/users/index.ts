@@ -4,6 +4,19 @@ import User from "../../../models/user";
 
 const usersRouter = Router();
 
+/**
+ * @api {post} /api/v1/users/register
+ * @apiName Create User
+ * @apiGroup Users
+ * 
+ * @apiParam {String} email unique
+ * @apiParam {String} password
+ * @apiParam {String} username
+ * 
+ * @apiSuccess {Number} id unique id of the user
+ * @apiSuccess {String} email unique email of the user
+ * @apiSuccess {String} username
+ */
 usersRouter.post("/register", async (req, res, next) => {
   const { email = "", password = "", username = "" } = req.body;
   const errors = [];

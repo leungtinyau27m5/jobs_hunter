@@ -1,7 +1,14 @@
 import { Router } from 'express';
+import { Sequelize, WhereOptions } from 'sequelize';
+import logger from '../../../common/logger';
 import config from '../../../config';
+import auth from '../../../middlewares/auth';
 import BizUser from '../../../models/bizUser';
 import Company from '../../../models/company';
+import Job from '../../../models/job';
+import JobApplication from '../../../models/jobApplication';
+import JobCategory from '../../../models/jobCat';
+import User from '../../../models/user';
 
 const biz = Router();
 
@@ -43,5 +50,142 @@ biz.post('/create', async (req, res, next) => {
     next(err);
   }
 });
+
+biz.get('/:bizReg/job', auth.required, auth.bizUser, async (req, res, next) => {
+  const user = req.body.user as BizUser;
+  const bizReg = req.params.bizReg;
+  if (bizReg !== user.bizReg)
+    return res.status(401).json({ errors: [{ biz: 'not allowed to access' }] });
+  const { offset = 0, limit = 20, categoryId = null } = req.query;
+  const where: WhereOptions = {
+    status: 'active',
+  };
+  if (categoryId !== null) where.categoryId = categoryId;
+  try {
+    const jobs = await Job.findAll({
+      where,
+      include: [
+        {
+          model: JobCategory,
+          attributes: ['name', 'description'],
+        },
+        {
+          model: JobApplication,
+          limit: 50,
+          attributes: ['userId'],
+        },
+      ],
+      limit: +limit > 20 ? +limit : +limit,
+      offset: +offset,
+    });
+    Promise.all(
+      jobs.map((job) =>
+        JobApplication.count({
+          where: {
+            jobId: job.id,
+          },
+        })
+      )
+    )
+      .then((counts) => {
+        counts.forEach((count, idx) => {
+          jobs[idx].setDataValue('totalApplications', count);
+        });
+        return res.json(jobs);
+      })
+      .catch(next);
+  } catch (err) {
+    return next(err);
+  }
+});
+
+biz.get(
+  '/:bizReg/application',
+  auth.required,
+  auth.bizUser,
+  async (req, res, next) => {
+    const { offset = 0, limit = 20 } = req.query;
+    const bizReg = req.params.bizReg;
+    const user = req.body.user as BizUser;
+    if (bizReg !== user.bizReg)
+      return res
+        .status(401)
+        .json({ errors: [{ biz: 'not allowed to access' }] });
+    JobApplication.findAndCountAll({
+      attributes: ['createdAt'],
+      offset: +offset,
+      limit: +limit > 20 ? 20 : +limit,
+      include: [
+        {
+          model: User,
+          attributes: ['icon', 'username', 'email', 'cv'],
+        },
+        {
+          model: Job,
+          attributes: ['id', 'title', 'status'],
+        },
+      ],
+      where: {
+        bizReg,
+      },
+    })
+      .then((applications) => {
+        return res.json(applications);
+      })
+      .catch(next);
+  }
+);
+
+biz.get(
+  '/:bizReg/application/:applicationId',
+  auth.required,
+  auth.bizUser,
+  auth.sameBiz,
+  async (req, res, next) => {
+    const { applicationId } = req.params;
+    const [jobId, userId] = applicationId.split('-');
+    if (!jobId || !userId)
+      return res.status(404).json({
+        errors: [
+          {
+            applicationId: 'not found',
+          },
+        ],
+      });
+    JobApplication.findOne({
+      where: {
+        userId,
+        jobId,
+      },
+      attributes: ['createdAt'],
+      include: [
+        {
+          model: User,
+          attributes: ['id', 'username', 'email', 'cv', 'icon'],
+        },
+        {
+          model: Job,
+          attributes: ['title', 'status'],
+        },
+      ],
+    })
+      .then((application) => {
+        if (!application)
+          return res
+            .status(404)
+            .json({ errors: [{ application: 'not found' }] });
+        res.json(application);
+        if (application.status === 'sent') {
+          application.status = 'reviewed';
+          try {
+            application.save().catch(logger.debug);
+          } catch (err) {
+            logger.debug(err);
+          }
+        }
+      })
+      .catch(next);
+  }
+);
 
 export default biz;

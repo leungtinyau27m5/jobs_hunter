@@ -3,10 +3,13 @@ import { DataTypes, Model } from 'sequelize';
 import Database from '../common/database';
 import jwt from 'jsonwebtoken';
 import config from '../config';
+import logger from '../common/logger';
+import UserSubscription from './userSubscription';
 
 class User extends Model {
   declare id: string;
   declare username: string;
+  declare icon?: string;
   declare email: string;
   declare salt: string;
   declare hash: string;
@@ -74,6 +77,10 @@ User.init(
         },
       },
     },
+    icon: {
+      type: DataTypes.STRING(512),
+      allowNull: true,
+    },
     cv: {
       type: DataTypes.STRING(2083),
       allowNull: true,
@@ -99,5 +106,16 @@ User.init(
     createdAt: true,
   }
 );
+
+User.afterCreate(async (user) => {
+  try {
+    const userId = user.id;
+    UserSubscription.create({
+      userId,
+    });
+  } catch (err) {
+    logger.debug(err);
+  }
+});
 
 export default User;
