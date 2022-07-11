@@ -23,6 +23,7 @@ class BizUser extends Model {
   declare email: string;
   declare salt: string;
   declare hash: string;
+  declare lastPasswordUpdated: Date | null;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
@@ -54,10 +55,11 @@ class BizUser extends Model {
     return jwt.sign(
       {
         id: this.id,
-        bizReg: this.bizReg,
         username: this.username,
-        role: this.role,
         email: this.email,
+        role: this.role,
+        bizReg: this.bizReg,
+        issueAt: Date.now(),
       },
       config.secret,
       {
@@ -98,6 +100,10 @@ BizUser.init(
           msg: 'invalid email',
         },
       },
+    },
+    lastPasswordUpdated: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
     salt: {
       type: DataTypes.STRING(32),

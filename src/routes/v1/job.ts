@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { WhereOptions } from 'sequelize';
+import { Includeable, Op, WhereOptions } from 'sequelize';
 import auth from '../../middlewares/auth';
 import BizUser from '../../models/bizUser';
 import Company from '../../models/company';
@@ -16,28 +16,56 @@ jobRouter.get('/', auth.optional, async (req, res, next) => {
     limit = 20,
     categoryId = null,
     bizReg = null,
+    minSalary = null,
+    maxSalary = null,
+    currency = 'HKD',
   } = req.query;
   const where: WhereOptions = {
     status: 'active',
   };
+  const include: Includeable[] = [
+    {
+      model: Company,
+      attributes: ['name', 'description', 'bizReg', 'district'],
+      as: 'company',
+    },
+    {
+      model: JobCategory,
+      attributes: ['name', 'description'],
+      as: 'category',
+    },
+  ];
+  if (req.body.user) {
+    include.push({
+      model: JobApplication,
+      as: 'applications',
+      where: {
+        userId: req.body.user.id,
+      },
+    });
+  }
   if (categoryId !== null) where.categoryId = categoryId;
   if (bizReg !== null) where.bizReg = bizReg;
+  if (minSalary)
+    where.minSalary = {
+      [Op.gte]: minSalary,
+    };
+  if (maxSalary) {
+    where.minSalary = {
+      [Op.lte]: maxSalary,
+    };
+  }
+  if (currency) {
+    where.currency = currency;
+  }
   try {
     const jobs = await Job.findAndCountAll({
+      attributes: {
+        exclude: ['minSalary', 'maxSalary'],
+      },
       where,
       offset: +offset,
-      include: [
-        {
-          model: Company,
-          attributes: ['name', 'description', 'bizReg', 'district'],
-          as: 'company',
-        },
-        {
-          model: JobCategory,
-          attributes: ['name', 'description'],
-          as: 'category',
-        },
-      ],
+      include: include,
       limit: +limit > 20 ? +limit : +limit,
     });
     return res.json(jobs);
@@ -116,10 +144,20 @@ jobRouter.put(
       .then(async (job) => {
         if (!job)
           return res.status(400).json({ errors: [{ job: 'not found' }] });
-        const { status, title, description } = req.body;
+        const {
+          status,
+          title,
+          description,
+          minSalary,
+          maxSalary,
+          currency = 'HKD',
+        } = req.body;
         if (status) job.status = status;
         if (title) job.title = title;
         if (description) job.description = description;
+        if (minSalary) job.minSalary = +minSalary;
+        if (maxSalary) job.maxSalary = +maxSalary;
+        if (currency) job.currency = currency;
         try {
           await job.validate();
           const saved = await job.save();
@@ -132,29 +170,36 @@ jobRouter.put(
   }
 );
 
-jobRouter.delete('/:jobId', auth.required, auth.bizUser, (req, res, next) => {
-  const user = req.body.user as BizUser;
-  Job.findOne({
-    where: {
-      id: req.params.jobId,
-      bizReg: user.bizReg,
-    },
-  })
-    .then(async (job) => {
-      if (!job) return res.status(400).json({ errors: [{ job: 'not found' }] });
-      if (!['admin', 'root'].includes(user.role)) {
-        return res
-          .status(401)
-          .json({ errors: [{ auth: 'underprivileged access right' }] });
-      }
-      try {
-        await job.destroy();
-        return res.sendStatus(200);
-      } catch (err) {
-        return next(err);
-      }
+jobRouter.delete(
+  '/:jobId',
+  auth.required,
+  auth.bizUser,
+  auth.sameBiz,
+  (req, res, next) => {
+    const user = req.body.user as BizUser;
+    Job.findOne({
+      where: {
+        id: req.params.jobId,
+        bizReg: user.bizReg,
+      },
     })
-    .catch(next);
-});
+      .then(async (job) => {
+        if (!job)
+          return res.status(400).json({ errors: [{ job: 'not found' }] });
+        if (!['admin', 'root'].includes(user.role)) {
+          return res
+            .status(401)
+            .json({ errors: [{ auth: 'underprivileged access right' }] });
+        }
+        try {
+          await job.destroy();
+          return res.sendStatus(200);
+        } catch (err) {
+          return next(err);
+        }
+      })
+      .catch(next);
+  }
+);
 
 export default jobRouter;

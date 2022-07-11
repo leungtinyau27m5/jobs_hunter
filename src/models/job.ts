@@ -20,6 +20,9 @@ class Job extends Model {
   declare status: 'active' | 'closed' | 'expired';
   declare lastUpdatedBy: ForeignKey<BizUser['id']>;
   declare categoryId: ForeignKey<JobCategory['id']> | null;
+  declare minSalary: number;
+  declare maxSalary: number;
+  declare currency: 'HKD' | 'CNY' | 'USD';
   declare created: CreationOptional<Date>;
   declare updated: CreationOptional<Date>;
 
@@ -49,6 +52,19 @@ Job.init(
     status: {
       type: DataTypes.ENUM('active', 'closed', 'expired'),
       defaultValue: 'active',
+    },
+    minSalary: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    maxSalary: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+    currency: {
+      type: DataTypes.ENUM('HKD', 'CNY', 'USD'),
+      allowNull: false,
+      defaultValue: 'HKD',
     },
   },
   {

@@ -20,8 +20,9 @@ const getNormalUserTokenFromRequest = async (req: Request) => {
           if (error) {
             resolve(error);
           } else if (decoded && typeof decoded !== 'string') {
-            const { id, username, email, bizReg, role } = decoded;
-            req.user = { id, username, email, bizReg, role };
+            console.log(decoded);
+            const { id, username, email, bizReg, role, issueAt } = decoded;
+            req.user = { id, username, email, bizReg, role, issueAt };
             resolve(true);
           } else {
             resolve(false);
@@ -78,6 +79,32 @@ export default {
         },
       })
         .then((bizUser) => {
+          if (!bizUser) {
+            return res.status(401).json({ errors: [{ bizUser: 'not found' }] });
+          }
+          if (!req.user?.issueAt) {
+            res.cookie('token', '', {
+              httpOnly: true,
+              secure: config.isProd,
+              maxAge: 1000,
+            });
+            return res
+              .status(401)
+              .json({ errors: [{ user: 'new auth required' }] });
+          }
+          if (
+            bizUser.lastPasswordUpdated &&
+            new Date(bizUser.lastPasswordUpdated).getTime() > req.user.issueAt
+          ) {
+            res.cookie('token', '', {
+              httpOnly: true,
+              secure: config.isProd,
+              maxAge: 1000,
+            });
+            return res
+              .status(401)
+              .json({ errors: [{ user: 'new auth required' }] });
+          }
           req.body.user = bizUser;
           next();
         })
@@ -89,6 +116,31 @@ export default {
         },
       })
         .then((user) => {
+          if (!user)
+            return res.status(401).json({ errors: [{ user: 'not found' }] });
+          if (!req.user?.issueAt) {
+            res.cookie('token', '', {
+              httpOnly: true,
+              secure: config.isProd,
+              maxAge: 1000,
+            });
+            return res
+              .status(401)
+              .json({ errors: [{ user: 'new auth required' }] });
+          }
+          if (
+            user.lastPasswordUpdated &&
+            new Date(user.lastPasswordUpdated).getTime() > req.user.issueAt
+          ) {
+            res.cookie('token', '', {
+              httpOnly: true,
+              secure: config.isProd,
+              maxAge: 1000,
+            });
+            return res
+              .status(401)
+              .json({ errors: [{ user: 'new auth required' }] });
+          }
           req.body.user = user;
           next();
         })

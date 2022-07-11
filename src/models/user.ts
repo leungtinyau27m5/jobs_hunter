@@ -22,6 +22,7 @@ class User extends Model {
   declare cvStatus: 'public' | 'companyOnly' | 'hide';
   declare icon: string | null;
   declare cv: string | null;
+  declare lastPasswordUpdated: Date | null;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
@@ -39,6 +40,7 @@ class User extends Model {
         id: this.id,
         username: this.username,
         email: this.email,
+        issueAt: Date.now(),
       },
       config.secret,
       {
@@ -105,6 +107,10 @@ User.init(
     cvStatus: {
       type: DataTypes.ENUM('public', 'companyOnly', 'hide'),
       defaultValue: 'hide',
+    },
+    lastPasswordUpdated: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
     salt: {
       type: DataTypes.STRING(32),

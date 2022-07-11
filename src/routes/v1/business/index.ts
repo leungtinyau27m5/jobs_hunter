@@ -62,9 +62,15 @@ biz.get(
       status: 'active',
     };
     if (categoryId !== null) where.categoryId = categoryId;
+    const { attr = '' } = req.query;
+    let attributes = ['title', 'status', 'createdAt', 'minSalary', 'maxSalary'];
+    if (typeof attr === 'string' && attr.includes(',') && attr.split(',')) {
+      attributes = attr.split(',');
+    }
     try {
       const jobs = await Job.findAll({
         where,
+        attributes,
         include: [
           {
             model: JobCategory,
@@ -74,7 +80,7 @@ biz.get(
           {
             model: JobApplication,
             limit: 50,
-            attributes: ['userId'],
+            attributes: ['userId', 'status'],
             as: 'applications',
           },
         ],
@@ -110,8 +116,15 @@ biz.get(
   auth.sameBiz,
   async (req, res, next) => {
     const user = req.body.user as BizUser;
+    const attributes = [
+      'title',
+      'status',
+      'createdAt',
+      'minSalary',
+      'maxSalary',
+    ];
     Job.findOne({
-      attributes: ['title', 'status', 'createdAt'],
+      attributes,
       where: {
         bizReg: user.bizReg,
         id: req.params.jobId,

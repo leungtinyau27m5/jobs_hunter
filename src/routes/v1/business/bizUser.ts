@@ -181,7 +181,10 @@ bizUser.put('/', auth.required, auth.bizUser, async (req, res, next) => {
   const user = req.body.user as BizUser;
   const { username, password } = req.body;
   if (username) user.username = username;
-  if (password) user.setPassword(password);
+  if (password) {
+    user.setPassword(password);
+    user.lastPasswordUpdated = new Date();
+  }
   try {
     await user.validate();
     const saved = await user.save();
