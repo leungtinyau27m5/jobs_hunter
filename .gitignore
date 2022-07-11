@@ -2,5 +2,3 @@ build
 node_modules
 **_log
 src/mailer/index.ts
-/apidoc
-/doc
