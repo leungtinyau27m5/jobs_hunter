@@ -27,10 +27,12 @@ jobRouter.get('/', auth.optional, async (req, res, next) => {
         {
           model: Company,
           attributes: ['name', 'description', 'bizReg', 'district'],
+          as: 'company'
         },
         {
           model: JobCategory,
           attributes: ['name', 'description'],
+          as: 'category'
         },
       ],
       limit: +limit > 20 ? +limit : +limit,

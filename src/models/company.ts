@@ -1,11 +1,38 @@
-import { DataTypes, Model } from 'sequelize';
+import {
+  Association,
+  CreationOptional,
+  DataTypes,
+  ForeignKey,
+  Model,
+  NonAttribute,
+} from 'sequelize';
 import Database from '../common/database';
+import BizUser from './bizUser';
+import CompanyCat from './companyCat';
+import Job from './job';
+import JobApplication from './jobApplication';
 
 class Company extends Model {
-  declare bizReg: string;
+  declare bizReg: CreationOptional<string>;
+  declare categoryId: ForeignKey<CompanyCat['id']>;
   declare name: string;
   declare description: string;
   declare district: string;
+  declare url: string | null;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
+
+  declare category?: NonAttribute<CompanyCat>;
+  declare jobs?: NonAttribute<Job[]>;
+  declare bizUsers?: NonAttribute<BizUser[]>;
+  declare applications?: NonAttribute<JobApplication[]>;
+
+  declare static associations: {
+    category: Association<Company, CompanyCat>;
+    jobs: Association<Company, Job>;
+    bizUsers: Association<Company, BizUser>;
+    applications: Association<Company, JobApplication>;
+  };
 
   toPublic() {
     return {
@@ -40,7 +67,7 @@ Company.init(
     url: {
       type: DataTypes.STRING(512),
       allowNull: true,
-    }
+    },
   },
   {
     sequelize: Database,

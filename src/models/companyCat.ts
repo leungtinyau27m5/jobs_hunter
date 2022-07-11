@@ -1,14 +1,33 @@
-import { DataTypes, Model } from "sequelize";
-import Database from "../common/database";
+import {
+  Association,
+  CreationOptional,
+  DataTypes,
+  Model,
+  NonAttribute,
+} from 'sequelize';
+import Database from '../common/database';
+import Company from './company';
 
-class CompanyCat extends Model {}
+class CompanyCat extends Model {
+  declare id: CreationOptional<number>;
+  declare name: string;
+  declare description: string | null;
+  declare created: CreationOptional<Date>;
+  declare updated: CreationOptional<Date>;
+
+  declare companies?: NonAttribute<Company[]>;
+
+  declare static associations: {
+    companies: Association<CompanyCat, Company>;
+  };
+}
 
 CompanyCat.init(
   {
     name: {
       type: DataTypes.STRING(50),
       allowNull: false,
-      unique: "name",
+      unique: 'name',
     },
     description: {
       type: DataTypes.STRING(255),
@@ -17,9 +36,10 @@ CompanyCat.init(
   },
   {
     sequelize: Database,
-    tableName: "company_categories",
+    tableName: 'company_categories',
     freezeTableName: true,
-    timestamps: true,
+    createdAt: true,
+    updatedAt: false,
   }
 );
 

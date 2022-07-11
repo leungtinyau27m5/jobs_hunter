@@ -1,19 +1,40 @@
 import { pbkdf2Sync, randomBytes } from 'crypto';
-import { DataTypes, Model } from 'sequelize';
+import {
+  Association,
+  CreationOptional,
+  DataTypes,
+  ForeignKey,
+  Model,
+  NonAttribute,
+} from 'sequelize';
 import Database from '../common/database';
 import jwt from 'jsonwebtoken';
 import config from '../config';
 import logger from '../common/logger';
 import BizUserSubscription from './bizUserSubscription';
+import Company from './company';
+import Job from './job';
 
 class BizUser extends Model {
-  declare id: string;
+  declare id: CreationOptional<number>;
+  declare bizReg: ForeignKey<Company['bizReg']>;
   declare username: string;
   declare role: string;
   declare email: string;
   declare salt: string;
   declare hash: string;
-  declare bizReg: string;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
+
+  declare createdJobs?: NonAttribute<Job[]>;
+  declare company: NonAttribute<Company>;
+  declare subscription?: NonAttribute<BizUserSubscription>;
+
+  declare static associations: {
+    createdJobs: Association<BizUser, Job>;
+    company: Association<BizUser, Company>;
+    subscription: Association<BizUser, BizUserSubscription>;
+  };
 
   setPassword(password: string) {
     this.salt = randomBytes(16).toString('hex');

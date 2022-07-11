@@ -1,7 +1,25 @@
-import { DataTypes, Model } from 'sequelize';
+import {
+  Association,
+  CreationOptional,
+  DataTypes,
+  ForeignKey,
+  Model,
+  NonAttribute,
+} from 'sequelize';
 import Database from '../common/database';
+import BizUser from './bizUser';
 
-class BizUserSubscription extends Model {}
+class BizUserSubscription extends Model {
+  declare bizUserId: ForeignKey<BizUser['id']>;
+  declare applied: boolean;
+  declare updatedAt: CreationOptional<Date>;
+
+  declare bizUser?: NonAttribute<BizUser>;
+
+  declare static associations: {
+    bizUser: Association<BizUserSubscription, BizUser>;
+  };
+}
 
 BizUserSubscription.init(
   {
@@ -20,7 +38,8 @@ BizUserSubscription.init(
     sequelize: Database,
     tableName: 'biz_user_subscription',
     freezeTableName: true,
-    createdAt: true,
+    updatedAt: true,
+    createdAt: false,
   }
 );
 

@@ -68,11 +68,13 @@ biz.get('/:bizReg/job', auth.required, auth.bizUser, async (req, res, next) => {
         {
           model: JobCategory,
           attributes: ['name', 'description'],
+          as: 'category'
         },
         {
           model: JobApplication,
           limit: 50,
           attributes: ['userId'],
+          as: 'applications'
         },
       ],
       limit: +limit > 20 ? +limit : +limit,
@@ -119,10 +121,12 @@ biz.get(
         {
           model: User,
           attributes: ['icon', 'username', 'email', 'cv'],
+          as: 'user'
         },
         {
           model: Job,
           attributes: ['id', 'title', 'status'],
+          as: 'job'
         },
       ],
       where: {
@@ -162,10 +166,12 @@ biz.get(
         {
           model: User,
           attributes: ['id', 'username', 'email', 'cv', 'icon'],
+          as: 'user'
         },
         {
           model: Job,
           attributes: ['title', 'status'],
+          as: 'job'
         },
       ],
     })

@@ -1,20 +1,37 @@
 import { pbkdf2Sync, randomBytes } from 'crypto';
-import { DataTypes, Model } from 'sequelize';
+import {
+  Association,
+  CreationOptional,
+  DataTypes,
+  Model,
+  NonAttribute,
+} from 'sequelize';
 import Database from '../common/database';
 import jwt from 'jsonwebtoken';
 import config from '../config';
 import logger from '../common/logger';
 import UserSubscription from './userSubscription';
+import JobApplication from './jobApplication';
 
 class User extends Model {
-  declare id: string;
+  declare id: CreationOptional<number>;
   declare username: string;
-  declare icon?: string;
   declare email: string;
   declare salt: string;
   declare hash: string;
   declare cvStatus: 'public' | 'companyOnly' | 'hide';
-  declare cv?: string;
+  declare icon: string | null;
+  declare cv: string | null;
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
+
+  declare appliedJobs?: NonAttribute<JobApplication[]>;
+  declare subscription?: NonAttribute<UserSubscription>;
+
+  declare static associations: {
+    appliedJobs: Association<User, JobApplication>;
+    subscription: Association<User, UserSubscription>;
+  };
 
   generateJWT(): string {
     return jwt.sign(
