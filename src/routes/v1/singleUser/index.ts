@@ -9,10 +9,11 @@ import User from '../../../models/user';
 const singleUserRouter = Router();
 
 /**
+ * @api {get} /api/v1/user Get User Information by Token
  * @apiVersion 1.0.0
- * @api {get} /api/v1/user
- * @apiGroup singleUser
- * @apiName GetUserByToken
+ * @apiGroup SingleUser
+ * @apiName Get User By Token
+ * 
  */
 singleUserRouter.get('/', auth.required, (req, res) => {
   res.json({ ...req.body.user });
