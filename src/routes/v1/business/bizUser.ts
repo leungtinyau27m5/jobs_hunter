@@ -7,10 +7,25 @@ import { bizUsercreatedMail } from '../../../mailer/templates/bizUser';
 import { passwordChangedTemplate } from '../../../mailer/templates/users';
 import auth from '../../../middlewares/auth';
 import BizUser from '../../../models/bizUser';
-import Job from '../../../models/job';
 
 const bizUser = Router();
 
+/**
+ * @api {post} /api/v1/bizUser/login Login
+ * @apiVersion 1.0.0
+ * @apiGroup BizUser
+ *
+ * @apiBody {String} email
+ * @apiBody {String} password
+ *
+ * @apiUse UnkonwnError
+ * @apiUse UnAuthorized
+ * @apiUse UserAuthObject
+ * 
+ * @apiSuccess (200) {Object} user
+ * @apiSuccess (200) {String} user.role
+ * @apiSuccess (200) {String} user.bizReg
+ */
 bizUser.post('/login', async (req, res, next) => {
   const { email = '', password = '' } = req.body;
   const errors = [];

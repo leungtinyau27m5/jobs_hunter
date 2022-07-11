@@ -10,17 +10,29 @@ import UserSubscription from '../../../models/userSubscription';
 const singleUserRouter = Router();
 
 /**
- * @api {get} /api/v1/user Get User Information by Token
+ * @api {get} /api/v1/user Token
  * @apiVersion 1.0.0
  * @apiGroup SingleUser
- * @apiName Get User By Token
  *
  */
 singleUserRouter.get('/', auth.required, (req, res) => {
-  const {token, ...json} = (req.body.user as User).toAuthJSON()
+  const { token, ...json } = (req.body.user as User).toAuthJSON();
   res.json(json);
 });
 
+/**
+ * @api {put} /api/v1/user Update
+ * @apiVersion 1.0.0
+ * @apiGroup SingleUser
+ *
+ * @apiBody {String} username
+ * @apiBody {String} password
+ *
+ * @apiUse UnkonwnError
+ * @apiUse UnAuthorized
+ * @apiUse UserAuthObject
+ *
+ */
 singleUserRouter.put('/', auth.required, async (req, res, next) => {
   const user = req.body.user as User;
   const { username, password } = req.body;
@@ -58,6 +70,24 @@ singleUserRouter.put('/', auth.required, async (req, res, next) => {
   }
 });
 
+/**
+ * @api {put} /api/v1/user/subscription Update Subscription
+ * @apiVersion 1.0.0
+ * @apiGroup SingleUser
+ *
+ * @apiBody {Boolean} applied default `true`
+ * @apiBody {Boolean} reviewed default `true`
+ *
+ * @apiUse UnkonwnError
+ * @apiUse UnAuthorized
+ *
+ * @apiSuccess (200) {Object} subscription updated subscription
+ * @apiSuccess (200) {Number} subscription.userId
+ * @apiSuccess (200) {Boolean} subscription.applied
+ * @apiSuccess (200) {Boolean} subscription.reviewed
+ * @apiSuccess (200) {Date} subscription.createdAt
+ * @apiSuccess (200) {Date} subscription.updatedAt
+ */
 singleUserRouter.put('/subscription', auth.required, async (req, res, next) => {
   const user = req.body.user as User;
   const { applied = true, reviewed = true } = req.body;
@@ -75,7 +105,6 @@ singleUserRouter.put('/subscription', auth.required, async (req, res, next) => {
     const saved = await subscription.save();
     return res.json(saved);
   } catch (err) {
-    console.log(err);
     return next(err);
   }
 });

@@ -4,6 +4,23 @@ import User from '../../../models/user';
 
 const usersRouter = Router();
 
+/**
+ * @api {post} /api/v1/users/register Registration
+ * @apiVersion 1.0.0
+ * @apiGroup Users
+ *
+ * @apiBody {String} email unique email
+ * @apiBody {String} password 8 - 16 long characters for <code>hash</code> and <code>salt</code>
+ * @apiBody {String} username user nick name
+ *
+ * @apiUse InvalidValue
+ * @apiUse UnkonwnError
+ *
+ * @apiSuccess {Object} User 200
+ * @apiSuccess {Number} User.id user unique id
+ * @apiSuccess {String} User.username user nickname
+ * @apiSuccess {String} User.email user unique email
+ */
 usersRouter.post('/register', async (req, res, next) => {
   const { email = '', password = '', username = '' } = req.body;
   const errors = [];
@@ -51,6 +68,20 @@ usersRouter.post('/register', async (req, res, next) => {
   }
 });
 
+/**
+ * @api {post} /api/v1/users/login Login
+ * @apiVersion 1.0.0
+ * @apiGroup Users
+ *
+ * @apiBody {String} email
+ * @apiBody {String} password
+ *
+ * @apiUse InvalidValue
+ * @apiUse UnAuthorized
+ * @apiUse UserAuthObject
+ * @apiUse UnkonwnError
+ *
+ */
 usersRouter.post('/login', async (req, res, next) => {
   const { email = '', password = '' } = req.body;
   const errors = [];
