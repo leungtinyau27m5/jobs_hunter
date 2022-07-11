@@ -5,6 +5,14 @@ import config from '../config';
 import User from '../models/user';
 import BizUser from '../models/bizUser';
 
+/**
+ * @apiDefine AuthUser User access only
+ * Only Registered Users are allowed to access the endpoint
+ * 
+ * @apiDefine AuthBizUser Biz access only
+ * Only Registered business users are allowed
+ */
+
 const getNormalUserTokenFromRequest = async (req: Request) => {
   return new Promise<VerifyErrors | null | boolean>((resolve) => {
     const token = req.cookies.token || req.headers.authorization;

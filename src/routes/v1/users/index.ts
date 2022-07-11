@@ -14,7 +14,7 @@ const usersRouter = Router();
  * @apiBody {String} username user nick name
  *
  * @apiUse InvalidValue
- * @apiUse UnkonwnError
+ * @apiUse UnknownError
  *
  * @apiSuccess {Object} User 200
  * @apiSuccess {Number} User.id user unique id
@@ -79,7 +79,7 @@ usersRouter.post('/register', async (req, res, next) => {
  * @apiUse InvalidValue
  * @apiUse UnAuthorized
  * @apiUse UserAuthObject
- * @apiUse UnkonwnError
+ * @apiUse UnknownError
  *
  */
 usersRouter.post('/login', async (req, res, next) => {

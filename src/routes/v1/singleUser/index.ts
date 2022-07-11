@@ -25,10 +25,10 @@ singleUserRouter.get('/', auth.required, (req, res) => {
  * @apiVersion 1.0.0
  * @apiGroup SingleUser
  *
- * @apiBody {String} username
- * @apiBody {String} password
+ * @apiBody {String} [username]
+ * @apiBody {String} [password]
  *
- * @apiUse UnkonwnError
+ * @apiUse UnknownError
  * @apiUse UnAuthorized
  * @apiUse UserAuthObject
  *
@@ -75,10 +75,10 @@ singleUserRouter.put('/', auth.required, async (req, res, next) => {
  * @apiVersion 1.0.0
  * @apiGroup SingleUser
  *
- * @apiBody {Boolean} applied default `true`
- * @apiBody {Boolean} reviewed default `true`
+ * @apiBody {Boolean} [applied] default `true`
+ * @apiBody {Boolean} [reviewed] default `true`
  *
- * @apiUse UnkonwnError
+ * @apiUse UnknownError
  * @apiUse UnAuthorized
  *
  * @apiSuccess (200) {Object} subscription updated subscription

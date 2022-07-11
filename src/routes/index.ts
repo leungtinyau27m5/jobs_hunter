@@ -9,16 +9,16 @@ const router = Router()
  */
 
 /**
- * @apiDefine UnkonwnError
+ * @apiDefine UnknownError
  * @apiError (500) {Object} error <code>Error</code> Object
  */
 
 /**
  * @apiDefine UserAuthObject
  * @apiSuccess (200) {Object} user
- * @apiSuccess (200) {Number} User.id user unique id
- * @apiSuccess (200) {String} User.username user nickname
- * @apiSuccess (200) {String} User.email user unique email
+ * @apiSuccess (200) {Number} user.id user unique id
+ * @apiSuccess (200) {String} user.username user nickname
+ * @apiSuccess (200) {String} user.email user unique email
  */
 
 /**

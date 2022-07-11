@@ -18,10 +18,10 @@ const bizUser = Router();
  * @apiBody {String} email
  * @apiBody {String} password
  *
- * @apiUse UnkonwnError
+ * @apiUse UnknownError
  * @apiUse UnAuthorized
  * @apiUse UserAuthObject
- * 
+ *
  * @apiSuccess (200) {Object} user
  * @apiSuccess (200) {String} user.role
  * @apiSuccess (200) {String} user.bizReg
@@ -65,6 +65,38 @@ bizUser.post('/login', async (req, res, next) => {
   }
 });
 
+/**
+ * @api {post} /api/v1/bizUser/user Create User
+ * @apiVersion 1.0.0
+ * @apiGroup BizUser
+ * @apiPermission AuthBizUser
+ *
+ * @apiBody {String} username
+ * @apiBody {String} role
+ * @apiBody {String} email
+ * @apiBody {String} password
+ *
+ * @apiUse UnknownError
+ * @apiUse UnAuthorized
+ * @apiUse InvalidValue
+ *
+ * @apiSuccess (200) {Object} result
+ * @apiSuccess (200) {Object} result.user
+ * @apiSuccess (200) {Number} result.user.id
+ * @apiSuccess (200) {String} result.user.username
+ * @apiSuccess (200) {String} result.user.email
+ * @apiSuccess (200) {String} result.user.role
+ * @apiSuccess (200) {String} result.user.bizReg
+ *
+ * @apiSuccess (201) {Object} result
+ * @apiSuccess (201) {Object} result.user
+ * @apiSuccess (201) {Number} result.user.id
+ * @apiSuccess (201) {String} result.user.username
+ * @apiSuccess (201) {String} result.user.email
+ * @apiSuccess (201) {String} result.user.role
+ * @apiSuccess (201) {String} result.user.bizReg
+ * @apiSuccess (201) {Error} result.mailError
+ */
 bizUser.post('/user', auth.required, auth.bizUser, async (req, res, next) => {
   const user = req.body.user as BizUser;
   if (!['root', 'admin'].includes(user.role)) {
@@ -108,7 +140,7 @@ bizUser.post('/user', auth.required, auth.bizUser, async (req, res, next) => {
         });
       })
       .catch((err) => {
-        res.json({
+        res.status(201).json({
           user: saved.toJSON(),
           mailError: err,
         });
